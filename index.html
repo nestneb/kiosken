@@ -5,58 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Romnes Kiosk Pro</title>
     <style>
-        body { font-family: -apple-system, sans-serif; background-color: #f0f2f5; padding: 20px; color: #333; }
-        .container { max-width: 500px; margin: 0 auto; }
-        h1 { text-align: center; color: #1a1a1a; }
+        body { font-family: -apple-system, sans-serif; background-color: #f0f2f5; padding: 15px; color: #333; margin: 0; }
+        .container { max-width: 500px; margin: 0 auto; padding-bottom: 100px; }
+        h1 { text-align: center; color: #1a1a1a; padding: 20px 0; margin: 0; }
         
         .item { 
             background: white; padding: 15px; margin: 10px 0; border-radius: 15px; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;
         }
-        .info h3 { margin: 0; font-size: 17px; }
-        .info p { margin: 3px 0 0; color: #666; font-size: 13px; }
+        .info h3 { margin: 0; font-size: 17px; color: #000; }
+        .info p { margin: 3px 0 0; color: #666; font-size: 13px; font-weight: 600; }
         
-        .controls { display: flex; align-items: center; gap: 15px; }
+        .controls { display: flex; align-items: center; gap: 10px; }
         button { 
-            width: 40px; height: 40px; border: none; border-radius: 10px; 
-            background: #007bff; color: white; font-size: 20px; cursor: pointer;
+            width: 45px; height: 45px; border: none; border-radius: 12px; 
+            background: #007bff; color: white; font-size: 24px; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
         }
-        .count { font-size: 20px; font-weight: bold; min-width: 30px; text-align: center; }
+        button:active { background: #0056b3; }
+        .count { font-size: 22px; font-weight: bold; min-width: 40px; text-align: center; }
         
-        .admin-section { margin-top: 40px; border-top: 2px solid #ddd; padding-top: 20px; display: none; }
-        .btn-admin { background: #6c757d; width: auto; padding: 10px 20px; border-radius: 5px; margin: 20px auto; display: block; }
+        /* Admin-seksjon */
+        .admin-panel { 
+            position: fixed; bottom: 0; left: 0; right: 0; background: #fff; 
+            padding: 15px; border-top: 1px solid #ddd; display: flex; flex-direction: column; gap: 10px;
+        }
+        .btn-admin-toggle { background: #6c757d; font-size: 14px; width: 100%; height: 40px; border-radius: 8px; }
+        .admin-controls { display: none; gap: 10px; }
+        .btn-action { font-size: 14px; height: 40px; border-radius: 8px; flex: 1; }
         
-        .inventory-mode .item { border-left: 5px solid #ffc107; }
-        .footer { text-align: center; margin-top: 50px; font-size: 12px; color: #999; }
+        .inventory-mode .item { border-left: 8px solid #ffc107; }
+        .inventory-mode .info p { color: #d39e00; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Romnes Kiosken</h1>
         <div id="app"></div>
-        
-        <button class="btn-admin" onclick="toggleAdmin()">Admin / Varetelling</button>
-        
-        <div id="adminArea" class="admin-section">
-            <h3>Admin Modus</h3>
-            <button onclick="toggleInventoryMode()" style="width: 100%; background: #28a745; margin-bottom: 10px;">Start Varetelling</button>
-            <button onclick="exportData()" style="width: 100%; background: #17a2b8;">Kopier Rapport til Utklippstavle</button>
+    </div>
+
+    <div class="admin-panel">
+        <div id="adminArea" class="admin-controls">
+            <button class="btn-action" style="background: #28a745;" onclick="toggleInventoryMode()">Varetelling PÅ/AV</button>
+            <button class="btn-action" style="background: #17a2b8;" onclick="exportData()">Kopier Rapport</button>
+            <button class="btn-action" style="background: #dc3545;" onclick="resetSystem()">Reset Alt</button>
         </div>
-        
-        <div class="footer">ID: Christian - Romnes Verksted</div>
+        <button id="mainAdminBtn" class="btn-admin-toggle" onclick="toggleAdmin()">Vis Admin Verktøy</button>
     </div>
 
     <script>
-        // Startliste med varer - her kan du legge til så mange du vil
-        let defaultItems = [
-            { name: "Red Bull", price: 35, count: 10, physical: 10 },
-            { name: "Burn", price: 30, count: 8, physical: 8 },
-            { name: "Monster", price: 40, count: 5, physical: 5 },
-            { name: "Twix", price: 20, count: 12, physical: 12 },
-            { name: "Snickers", price: 20, count: 7, physical: 7 },
-            { name: "Sørlandschips", price: 25, count: 4, physical: 4 },
-            { name: "Coca Cola", price: 30, count: 15, physical: 15 },
-            { name: "Pepsi Max", price: 30, count: 20, physical: 20 }
+        // Fullstendig varelager
+        const defaultItems = [
+            { name: "Red Bull", price: "35,-", count: 10, physical: 10 },
+            { name: "Burn", price: "30,-", count: 8, physical: 8 },
+            { name: "Monster", price: "40,-", count: 5, physical: 5 },
+            { name: "Twix", price: "20,-", count: 12, physical: 12 },
+            { name: "Snickers", price: "20,-", count: 7, physical: 7 },
+            { name: "Sørlandschips", price: "25,-", count: 4, physical: 4 },
+            { name: "Coca Cola", price: "30,-", count: 15, physical: 15 },
+            { name: "Pepsi Max", price: "30,-", count: 20, physical: 20 },
+            { name: "Nøtter", price: "25,-", count: 6, physical: 6 }
         ];
 
         let items = JSON.parse(localStorage.getItem('kioskProData')) || defaultItems;
@@ -71,17 +79,17 @@
                 const div = document.createElement('div');
                 div.className = `item ${isInventoryMode ? 'inventory-mode' : ''}`;
                 
-                let displayCount = isInventoryMode ? item.physical : item.count;
-                let subText = isInventoryMode ? `Fysisk i hylle` : `Pris: ${item.price},-`;
+                let val = isInventoryMode ? item.physical : item.count;
+                let label = isInventoryMode ? `Fysisk i hylle` : `Pris: ${item.price}`;
 
                 div.innerHTML = `
                     <div class="info">
                         <h3>${item.name}</h3>
-                        <p>${subText}</p>
+                        <p>${label}</p>
                     </div>
                     <div class="controls">
                         <button onclick="change(${index}, -1)">−</button>
-                        <span class="count">${displayCount}</span>
+                        <span class="count">${val}</span>
                         <button onclick="change(${index}, 1)">+</button>
                     </div>
                 `;
@@ -101,23 +109,29 @@
 
         function toggleAdmin() {
             isAdmin = !isAdmin;
-            document.getElementById('adminArea').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('adminArea').style.display = isAdmin ? 'flex' : 'none';
+            document.getElementById('mainAdminBtn').innerText = isAdmin ? 'Skjul Admin' : 'Vis Admin Verktøy';
         }
 
         function toggleInventoryMode() {
             isInventoryMode = !isInventoryMode;
-            alert(isInventoryMode ? "Varetelling aktivert! Juster det du FAKTISK har i hylla." : "Varetelling avsluttet.");
             render();
         }
 
         function exportData() {
-            let report = "KIOSK RAPPORT\n";
+            let report = "KIOSK RAPPORT\n------------------\n";
             items.forEach(i => {
                 let diff = i.physical - i.count;
-                report += `${i.name}: System(${i.count}) Fysisk(${i.physical}) Diff(${diff})\n`;
+                report += `${i.name}:\nSystem: ${i.count} | Fysisk: ${i.physical} | Diff: ${diff}\n\n`;
             });
-            navigator.clipboard.writeText(report);
-            alert("Rapport kopiert!");
+            navigator.clipboard.writeText(report).then(() => alert("Rapport kopiert!"));
+        }
+
+        function resetSystem() {
+            if(confirm("Vil du slette alle endringer og starte på nytt?")) {
+                items = JSON.parse(JSON.stringify(defaultItems));
+                render();
+            }
         }
 
         render();
