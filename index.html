@@ -2,82 +2,122 @@
 <html lang="no">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Romnes Kiosken</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Romnes Kiosk Pro</title>
     <style>
         body { font-family: -apple-system, sans-serif; background-color: #f0f2f5; padding: 20px; color: #333; }
-        h1 { color: #1a1a1a; text-align: center; margin-bottom: 30px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        h1 { text-align: center; color: #1a1a1a; }
+        
         .item { 
-            background: white; 
-            padding: 20px; 
-            margin: 15px auto; 
-            border-radius: 15px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-            max-width: 400px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: white; padding: 15px; margin: 10px 0; border-radius: 15px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;
         }
-        .info { text-align: left; }
-        .info h3 { margin: 0; font-size: 18px; color: #000; }
-        .info p { margin: 5px 0 0; color: #666; font-size: 14px; font-weight: 500; }
-        .controls { display: flex; align-items: center; }
+        .info h3 { margin: 0; font-size: 17px; }
+        .info p { margin: 3px 0 0; color: #666; font-size: 13px; }
+        
+        .controls { display: flex; align-items: center; gap: 15px; }
         button { 
-            padding: 0; 
-            width: 45px;
-            height: 45px;
-            font-size: 24px; 
-            cursor: pointer; 
-            border: none; 
-            border-radius: 12px; 
-            background: #007bff; 
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: background 0.2s;
+            width: 40px; height: 40px; border: none; border-radius: 10px; 
+            background: #007bff; color: white; font-size: 20px; cursor: pointer;
         }
-        button:active { background: #0056b3; }
-        .count { font-size: 24px; font-weight: bold; margin: 0 20px; min-width: 40px; text-align: center; }
+        .count { font-size: 20px; font-weight: bold; min-width: 30px; text-align: center; }
+        
+        .admin-section { margin-top: 40px; border-top: 2px solid #ddd; padding-top: 20px; display: none; }
+        .btn-admin { background: #6c757d; width: auto; padding: 10px 20px; border-radius: 5px; margin: 20px auto; display: block; }
+        
+        .inventory-mode .item { border-left: 5px solid #ffc107; }
+        .footer { text-align: center; margin-top: 50px; font-size: 12px; color: #999; }
     </style>
 </head>
 <body>
-    <h1>Romnes Kiosken</h1>
-    <div id="app"></div>
+    <div class="container">
+        <h1>Romnes Kiosken</h1>
+        <div id="app"></div>
+        
+        <button class="btn-admin" onclick="toggleAdmin()">Admin / Varetelling</button>
+        
+        <div id="adminArea" class="admin-section">
+            <h3>Admin Modus</h3>
+            <button onclick="toggleInventoryMode()" style="width: 100%; background: #28a745; margin-bottom: 10px;">Start Varetelling</button>
+            <button onclick="exportData()" style="width: 100%; background: #17a2b8;">Kopier Rapport til Utklippstavle</button>
+        </div>
+        
+        <div class="footer">ID: Christian - Romnes Verksted</div>
+    </div>
 
     <script>
-        // Her kan du enkelt legge til flere varer eller endre priser senere
-        const items = [
-            { name: "Red Bull", price: "35,-", count: 10 },
-            { name: "Twix", price: "20,-", count: 5 },
-            { name: "Burn", price: "30,-", count: 8 },
-            { name: "Sørlandschips", price: "25,-", count: 4 }
+        // Startliste med varer - her kan du legge til så mange du vil
+        let defaultItems = [
+            { name: "Red Bull", price: 35, count: 10, physical: 10 },
+            { name: "Burn", price: 30, count: 8, physical: 8 },
+            { name: "Monster", price: 40, count: 5, physical: 5 },
+            { name: "Twix", price: 20, count: 12, physical: 12 },
+            { name: "Snickers", price: 20, count: 7, physical: 7 },
+            { name: "Sørlandschips", price: 25, count: 4, physical: 4 },
+            { name: "Coca Cola", price: 30, count: 15, physical: 15 },
+            { name: "Pepsi Max", price: 30, count: 20, physical: 20 }
         ];
+
+        let items = JSON.parse(localStorage.getItem('kioskProData')) || defaultItems;
+        let isAdmin = false;
+        let isInventoryMode = false;
 
         function render() {
             const container = document.getElementById('app');
             container.innerHTML = '';
+            
             items.forEach((item, index) => {
                 const div = document.createElement('div');
-                div.className = 'item';
+                div.className = `item ${isInventoryMode ? 'inventory-mode' : ''}`;
+                
+                let displayCount = isInventoryMode ? item.physical : item.count;
+                let subText = isInventoryMode ? `Fysisk i hylle` : `Pris: ${item.price},-`;
+
                 div.innerHTML = `
                     <div class="info">
                         <h3>${item.name}</h3>
-                        <p>Pris: ${item.price}</p>
+                        <p>${subText}</p>
                     </div>
                     <div class="controls">
                         <button onclick="change(${index}, -1)">−</button>
-                        <span class="count">${item.count}</span>
+                        <span class="count">${displayCount}</span>
                         <button onclick="change(${index}, 1)">+</button>
                     </div>
                 `;
                 container.appendChild(div);
             });
+            localStorage.setItem('kioskProData', JSON.stringify(items));
         }
 
         function change(index, amount) {
-            items[index].count = Math.max(0, items[index].count + amount);
+            if (isInventoryMode) {
+                items[index].physical = Math.max(0, items[index].physical + amount);
+            } else {
+                items[index].count = Math.max(0, items[index].count + amount);
+            }
             render();
+        }
+
+        function toggleAdmin() {
+            isAdmin = !isAdmin;
+            document.getElementById('adminArea').style.display = isAdmin ? 'block' : 'none';
+        }
+
+        function toggleInventoryMode() {
+            isInventoryMode = !isInventoryMode;
+            alert(isInventoryMode ? "Varetelling aktivert! Juster det du FAKTISK har i hylla." : "Varetelling avsluttet.");
+            render();
+        }
+
+        function exportData() {
+            let report = "KIOSK RAPPORT\n";
+            items.forEach(i => {
+                let diff = i.physical - i.count;
+                report += `${i.name}: System(${i.count}) Fysisk(${i.physical}) Diff(${diff})\n`;
+            });
+            navigator.clipboard.writeText(report);
+            alert("Rapport kopiert!");
         }
 
         render();
