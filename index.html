@@ -14,8 +14,8 @@
     <div class="max-w-md mx-auto p-4">
         <header class="mb-6 flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-black text-slate-800 tracking-tight uppercase">Romnes <span class="text-blue-600 italic">Kiosken</span></h1>
-                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Lagersystem v1.0</p>
+                <h1 class="text-2xl font-black text-red-600 tracking-tight uppercase">Romnes <span class="italic">Kiosken</span></h1>
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Lagersystem v1.2</p>
             </div>
             <button onclick="toggleAdmin()" id="admin-btn" class="bg-slate-200 text-slate-600 px-3 py-1 rounded font-bold text-[10px] uppercase shadow-sm">Admin: AV</button>
         </header>
@@ -32,14 +32,19 @@
         </div>
 
         <div id="admin-panel" class="hidden mb-6 p-5 bg-slate-800 rounded-3xl text-white shadow-2xl">
-            <h2 class="text-xs font-bold mb-3 uppercase tracking-wider">Ny vare / Redigering</h2>
+            <h2 id="admin-title" class="text-xs font-bold mb-3 uppercase tracking-wider">Ny vare / Redigering</h2>
+            <input id="edit-id" type="hidden">
             <div class="grid grid-cols-2 gap-2 text-black">
                 <input id="new-n" type="text" placeholder="Navn på vare" class="p-3 rounded-xl text-xs">
                 <input id="new-inn" type="number" placeholder="Antall på lager" class="p-3 rounded-xl text-xs">
                 <input id="new-p" type="number" placeholder="Utsalgspris" class="p-3 rounded-xl text-xs">
                 <input id="new-c" type="number" step="0.01" placeholder="Innkjøpspris" class="p-3 rounded-xl text-xs">
             </div>
-            <button onclick="addVare()" class="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all">Legg til i listen</button>
+            <div class="flex gap-2 mt-4">
+                <button id="add-btn" onclick="addVare()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg">Legg til</button>
+                <button id="save-btn" onclick="saveEdit()" class="hidden flex-1 bg-green-600 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg">Lagre endring</button>
+                <button id="cancel-btn" onclick="cancelEdit()" class="hidden bg-slate-600 text-white px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg">X</button>
+            </div>
         </div>
 
         <div id="app" class="space-y-3"></div>
@@ -58,28 +63,17 @@
             { id: 2, n: "Twix Xtra 75g", p: 30, c: 25.06, in: 30 },
             { id: 3, n: "Burn Original 0,5L", p: 30, c: 23.83, in: 24 },
             { id: 4, n: "Monster Ultra White", p: 30, c: 22.30, in: 24 },
-            { id: 17, n: "Monster Energy Orig.", p: 30, c: 22.30, in: 0 },
             { id: 5, n: "Farris Frus Eple/Kiwi", p: 30, c: 22.53, in: 24 },
-            { id: 6, n: "Urge 0,5L", p: 30, c: 21.04, in: 24 },
-            { id: 7, n: "Villa 0,5L", p: 30, c: 20.85, in: 24 },
-            { id: 8, n: "Farris Lime 0,5L", p: 30, c: 20.49, in: 24 },
-            { id: 9, n: "Farris Naturell 0,5L", p: 30, c: 19.51, in: 24 },
-            { id: 10, n: "Pepsi Max 0,5L", p: 30, c: 19.19, in: 24 },
-            { id: 11, n: "Coca-Cola 0,5L", p: 30, c: 18.10, in: 72 },
-            { id: 12, n: "Snickers Single 50g", p: 25, c: 17.80, in: 32 },
-            { id: 13, n: "Center Rull", p: 25, c: 16.25, in: 36 },
-            { id: 14, n: "Fishermans Friend MI", p: 25, c: 14.64, in: 24 },
-            { id: 15, n: "Pringles 40g (Alle)", p: 25, c: 13.92, in: 24 },
-            { id: 16, n: "Fishermans Friend SA", p: 25, c: 13.39, in: 24 }
+            { id: 11, n: "Coca-Cola 0,5L", p: 30, c: 18.10, in: 72 }
         ];
 
-        let state = JSON.parse(localStorage.getItem('kioskPro_v5')) || {
+        let state = JSON.parse(localStorage.getItem('kioskPro_v7')) || {
             varer: VARE_LISTE.map(v => ({...v, cur: v.in})),
             admin: false,
             restock: false
         };
 
-        function toggleAdmin() { state.admin = !state.admin; render(); }
+        function toggleAdmin() { state.admin = !state.admin; cancelEdit(); render(); }
         function toggleRestock() { state.restock = !state.restock; render(); }
 
         function addVare() {
@@ -89,8 +83,44 @@
             const c = parseFloat(document.getElementById('new-c').value);
             if(!n || !p || !c) return alert("Fyll ut alt");
             state.varer.push({ id: Date.now(), n, p, c, in: inn, cur: inn });
-            save(); render();
-            ['new-n','new-inn','new-p','new-c'].forEach(id => document.getElementById(id).value = '');
+            save(); render(); clearInputs();
+        }
+
+        function editVare(id) {
+            const v = state.varer.find(x => x.id === id);
+            document.getElementById('edit-id').value = v.id;
+            document.getElementById('new-n').value = v.n;
+            document.getElementById('new-inn').value = v.in;
+            document.getElementById('new-p').value = v.p;
+            document.getElementById('new-c').value = v.c;
+            document.getElementById('admin-title').innerText = "Redigerer: " + v.n;
+            document.getElementById('add-btn').classList.add('hidden');
+            document.getElementById('save-btn').classList.remove('hidden');
+            document.getElementById('cancel-btn').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function saveEdit() {
+            const id = parseInt(document.getElementById('edit-id').value);
+            const v = state.varer.find(x => x.id === id);
+            v.n = document.getElementById('new-n').value;
+            v.in = parseInt(document.getElementById('new-inn').value) || 0;
+            v.p = parseFloat(document.getElementById('new-p').value);
+            v.c = parseFloat(document.getElementById('new-c').value);
+            if(v.cur > v.in) v.cur = v.in;
+            save(); cancelEdit(); render();
+        }
+
+        function cancelEdit() {
+            clearInputs();
+            document.getElementById('admin-title').innerText = "Ny vare";
+            document.getElementById('add-btn').classList.remove('hidden');
+            document.getElementById('save-btn').classList.add('hidden');
+            document.getElementById('cancel-btn').classList.add('hidden');
+        }
+
+        function clearInputs() {
+            ['new-n','new-inn','new-p','new-c','edit-id'].forEach(id => document.getElementById(id).value = '');
         }
 
         function update(id, delta) {
@@ -111,7 +141,7 @@
             }
         }
 
-        function save() { localStorage.setItem('kioskPro_v5', JSON.stringify(state)); }
+        function save() { localStorage.setItem('kioskPro_v7', JSON.stringify(state)); }
 
         function refreshStats() {
             let totalProfit = 0, stockValue = 0;
@@ -139,24 +169,26 @@
 
             state.varer.forEach(v => {
                 const margin = ((v.p - v.c) / v.p) * 100;
-                const marginColor = margin < 15 ? 'text-red-500' : (margin < 25 ? 'text-amber-500' : 'text-green-600');
                 const div = document.createElement('div');
                 div.id = `card-${v.id}`;
                 div.className = "bg-white p-4 rounded-2xl shadow-sm border border-slate-100";
                 div.innerHTML = `
                     <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-[13px] leading-tight">${v.n}</h3>
-                            <p class="text-[9px] font-bold uppercase ${marginColor} mt-1">Margin: ${margin.toFixed(0)}% (${(v.p-v.c).toFixed(1)} kr)</p>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-bold text-slate-800 text-[13px] leading-tight">${v.n}</h3>
+                                ${state.admin ? `<button onclick="editVare(${v.id})" class="text-blue-500 text-[10px]">✎</button>` : ''}
+                            </div>
+                            <p class="text-[9px] font-bold uppercase text-slate-400 mt-1">Margin: ${margin.toFixed(0)}% (${(v.p-v.c).toFixed(1)} kr)</p>
                         </div>
                         ${state.admin ? `<button onclick="deleteVare(${v.id})" class="text-[9px] text-red-300 font-bold uppercase">Slett</button>` : ''}
                     </div>
                     <div class="flex items-center justify-between mt-3">
-                        <div class="text-[9px] text-slate-400 font-mono">Lager: ${v.cur} av ${v.in}</div>
+                        <div class="text-[9px] text-slate-400 font-mono">Lager: ${v.cur} av ${v.in} | Pris: ${v.p},-</div>
                         <div class="flex items-center gap-3">
-                            <button onclick="update(${v.id}, -1)" class="w-12 h-10 bg-slate-50 border border-slate-100 rounded-xl font-black text-slate-700 active:bg-slate-200 shadow-sm">-</button>
+                            <button onclick="update(${v.id}, -1)" class="w-12 h-10 bg-slate-50 border border-slate-100 rounded-xl font-black text-slate-700">-</button>
                             <span id="qty-${v.id}" class="w-6 text-center font-black text-blue-600 text-lg">${v.cur}</span>
-                            <button onclick="update(${v.id}, 1)" class="w-12 h-10 bg-slate-50 border border-slate-100 rounded-xl font-black text-slate-700 active:bg-slate-200 shadow-sm">+</button>
+                            <button onclick="update(${v.id}, 1)" class="w-12 h-10 bg-slate-50 border border-slate-100 rounded-xl font-black text-slate-700">+</button>
                         </div>
                     </div>
                 `;
