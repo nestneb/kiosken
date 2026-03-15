@@ -65,25 +65,26 @@
         const PANT = 2.40; // Gjennomsnittlig pant inkl mva fra leverandør
 
         const VARE_LISTE = [
-            { id: 1, n: "Red Bull Regular 0,473", p: 47, c: 27.54 + PANT, in: 48 },
-            { id: 2, n: "Monster Original 0,5", p: 32, c: 17.65 + PANT, in: 24 },
-            { id: 3, n: "Monster Ultra White 0,5", p: 32, c: 17.65 + PANT, in: 24 },
-            { id: 4, n: "Burn Original 0,5", p: 32, c: 18.98 + PANT, in: 24 },
-            { id: 5, n: "Urge 0,5", p: 32, c: 16.56 + PANT, in: 24 },
-            { id: 6, n: "Pepsi Max 0,5", p: 32, c: 14.95 + PANT, in: 24 },
-            { id: 7, n: "Coca-Cola 0,5", p: 32, c: 14.00 + PANT, in: 72 },
-            { id: 8, n: "Villa 0,5", p: 32, c: 16.39 + PANT, in: 24 },
-            { id: 9, n: "Farris Naturell 0,5", p: 32, c: 15.23 + PANT, in: 24 },
-            { id: 10, n: "Farris Lime 0,5", p: 32, c: 16.08 + PANT, in: 24 },
-            { id: 11, n: "Farris Frus Eple/Kiwi", p: 32, c: 17.85 + PANT, in: 24 },
-            { id: 12, n: "Twix Xtra 75g", p: 35, c: 21.79, in: 30 },
-            { id: 13, n: "Snickers Single 50g", p: 25, c: 15.48, in: 32 },
-            { id: 14, n: "Center Rull 78g", p: 25, c: 14.13, in: 36 },
-            { id: 15, n: "Freia Peanøttkubbe", p: 25, c: 13.04, in: 10 },
-            { id: 16, n: "Pringles Original 40g", p: 25, c: 12.10, in: 12 },
-            { id: 17, n: "Pringles Paprika 40g", p: 25, c: 12.10, in: 12 },
-            { id: 18, n: "Fishermans Friend SA", p: 20, c: 11.64, in: 24 },
-            { id: 19, n: "Fishermans Friend MI", p: 20, c: 12.73, in: 24 }
+            { id: 1, n: "Red Bull Regular", p: 42, c: 27.54 + PANT, in: 72 },
+            { id: 2, n: "Monster Original", p: 30, c: 17.65 + PANT, in: 24 },
+            { id: 3, n: "Monster Ultra White", p: 30, c: 17.65 + PANT, in: 72 },
+            { id: 4, n: "Burn Original", p: 30, c: 18.98 + PANT, in: 72 },
+            { id: 5, n: "Urge", p: 30, c: 16.56 + PANT, in: 24 },
+            { id: 6, n: "Pepsi Max", p: 30, c: 14.95 + PANT, in: 24 },
+            { id: 7, n: "Coca-Cola", p: 30, c: 14.00 + PANT, in: 72 },
+            { id: 8, n: "Villa", p: 30, c: 16.39 + PANT, in: 24 },
+            { id: 9, n: "Farris Naturell", p: 30, c: 15.23 + PANT, in: 24 },
+            { id: 10, n: "Farris Lime", p: 30, c: 16.08 + PANT, in: 24 },
+            { id: 11, n: "Farris Frus Eple/Kiwi", p: 30, c: 17.85 + PANT, in: 24 },
+            { id: 12, n: "Twix", p: 30, c: 21.79, in: 60 },
+            { id: 13, n: "Snickers", p: 25, c: 15.48, in: 64 },
+            { id: 14, n: "Center", p: 25, c: 14.13, in: 36 },
+            { id: 15, n: "Peanøttkubbe", p: 25, c: 13.04, in: 45 },
+            { id: 16, n: "Pringles Original", p: 25, c: 12.10, in: 12 },
+            { id: 17, n: "Pringles Paprika", p: 25, c: 12.10, in: 12 },
+            { id: 18, n: "Fishermans Friend SA", p: 25, c: 11.64, in: 24 },
+            { id: 19, n: "Fishermans Friend MI", p: 25, c: 12.73, in: 24 },
+            { id: 20, n: "Lion", p: 25, c: 10.00, in: 10 }
         ];
 
         let state = JSON.parse(localStorage.getItem('kioskPro_v1.5')) || {
